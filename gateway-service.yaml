@@ -1,0 +1,74 @@
+server:
+  port: 8080
+  
+eureka:
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+  instance:
+    hostname: localhost
+
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+      routes:
+        #############################################################################
+        #                   MICROSERVICIOS INDEPENDIENTES                           #
+        #############################################################################
+        #Ruta para HU1: Configuración de Tarifas y Duración de Reservas
+        - id: lap-price-service
+          uri: lb://lap-price-service
+          predicates:
+            - Path=/lap-price-service/**
+          filters:
+            - StripPrefix=1
+        #Ruta para HU2: Descuento por número de personas
+        - id: nro-person-discount-service
+          uri: lb://nro-person-discount-service
+          predicates:
+            - Path=/nro-person-discount-service/**
+          filters:
+            - StripPrefix=1
+        #Ruta para HU3: Descuentos para Clientes Frecuentes
+        - id: frequent-customer-discount-service
+          uri: lb://frequent-customer-discount-service
+          predicates:
+            - Path=/frequent-customer-discount-service/**
+          filters:
+            - StripPrefix=1
+        #Ruta para HU4: Tarifas para Días Especiales
+        - id: special-days-service
+          uri: lb://special-days-service
+          predicates:
+            - Path=/special-days-service/**
+          filters:
+            - StripPrefix=1
+        #############################################################################
+        #A partir de aquí existen microservicios que dependen de otros microservicios
+        #############################################################################
+        #Ruta para HU5: Registro de Reservas y Comprobante de Pago para Clientes
+        - id: reservation-payment-details-service
+          uri: lb://reservation-payment-details-service
+          predicates:
+            - Path=/reservation-payment-details-service/**
+          filters:
+            - StripPrefix=1
+        #Ruta para HU6: Rack Semanal de Ocupación de la Pista
+        - id: weekly-calendar-service
+          uri: lb://weekly-calendar-service
+          predicates:
+            - Path=/weekly-calendar-service/**
+          filters:
+            - StripPrefix=1
+        #Ruta para HU7: Reporte de Ingresos por Número de Vueltas o Tiempo Máximo y de Ingresos por Número de Personas
+        - id: reports-service
+          uri: lb://reports-service
+          predicates:
+            - Path=/reports-service/**
+          filters:
+            - StripPrefix=1
